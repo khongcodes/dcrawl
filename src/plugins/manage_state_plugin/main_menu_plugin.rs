@@ -153,6 +153,7 @@ fn main_menu_action_system(
       (&Interaction, &MainMenuButtonAction),
       (Changed<Interaction>, With<Button>)
    >,
+   mut next_state: ResMut<NextState<GameModeState>>,
    mut app_exit_events: EventWriter<AppExit>
 ) {
    for (interaction, menu_button_action) in &interaction_query {
@@ -160,7 +161,7 @@ fn main_menu_action_system(
          match menu_button_action {
             
             MainMenuButtonAction::Continue => {
-               println!("continue game (TBD)");
+               next_state.set(GameModeState::InGame);
             }
 
             MainMenuButtonAction::Quit => {
