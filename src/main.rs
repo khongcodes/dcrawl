@@ -1,19 +1,16 @@
 use bevy::prelude::*;
 
 mod plugins;
-use crate::plugins::manage_state_plugin::ManageStatePlugin;
-
+use crate::plugins::{
+    game_runtime_plugin::GameRuntimePlugin, manage_state_plugin::ManageStatePlugin,
+};
+#[derive(Component)]
+pub struct UiCameraMarker;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_systems(Startup, setup)
-        .add_plugins((
-            ManageStatePlugin,
-        ))
+        .add_plugins((ManageStatePlugin, GameRuntimePlugin))
         .run();
 }
 
-fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
-}
