@@ -1,5 +1,4 @@
 use crate::plugins::manage_state_plugin::GameModeState;
-use crate::UiCameraMarker;
 use bevy::prelude::*;
 
 pub struct IntroScreenPlugin;
@@ -24,13 +23,13 @@ struct IntroScreenData {
     start_button_entity: Entity,
 }
 
-fn setup_intro_screen(mut commands: Commands) {
+fn setup_intro_screen(
+    query: Query<Entity, With<IsDefaultUiCamera>>,
+    mut commands: Commands
+) {
 
-    let intro_screen_camera = commands.spawn(
-        Camera2dBundle { 
-            ..default()
-        }
-    ).id();
+    // TODO: try to query in IsDefaultUiCamera and make that target camera?
+    let ui_camera = query.single();
 
     let start_button_entity = commands
         .spawn((
@@ -45,7 +44,7 @@ fn setup_intro_screen(mut commands: Commands) {
                 },
                 ..default()
             },
-            TargetCamera(intro_screen_camera),
+            TargetCamera(ui_camera),
         ))
         .with_children(|parent| {
             parent
@@ -79,6 +78,7 @@ fn setup_intro_screen(mut commands: Commands) {
 }
 
 fn cleanup_intro_screen(mut commands: Commands, introscreen_data: Res<IntroScreenData>) {
+    println!("cleaning up intro screen");
     commands
         .entity(introscreen_data.start_button_entity)
         .despawn_recursive();

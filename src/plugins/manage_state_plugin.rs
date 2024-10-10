@@ -2,7 +2,8 @@ mod ingame_state_plugin;
 mod intro_screen_plugin;
 mod main_menu_plugin;
 use crate::plugins::manage_state_plugin::{
-    ingame_state_plugin::InGameStatePlugin, intro_screen_plugin::IntroScreenPlugin,
+    ingame_state_plugin::InGameStatePlugin, 
+    intro_screen_plugin::IntroScreenPlugin,
     main_menu_plugin::MainMenuPlugin,
 };
 

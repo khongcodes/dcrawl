@@ -2,15 +2,15 @@ use bevy::prelude::*;
 
 mod plugins;
 use crate::plugins::{
-    game_runtime_plugin::GameRuntimePlugin, manage_state_plugin::ManageStatePlugin,
+    game_runtime_plugin::GameRuntimePlugin, 
+    manage_state_plugin::ManageStatePlugin,
+    camera_plugin::CameraPlugin,
 };
-#[derive(Component)]
-pub struct UiCameraMarker;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins((ManageStatePlugin, GameRuntimePlugin))
+        .add_plugins((CameraPlugin, ManageStatePlugin, GameRuntimePlugin))
         .run();
 }
 

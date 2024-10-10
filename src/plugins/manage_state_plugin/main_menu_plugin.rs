@@ -1,5 +1,4 @@
 use crate::plugins::manage_state_plugin::GameModeState;
-use crate::UiCameraMarker;
 use bevy::prelude::*;
 
 pub struct MainMenuPlugin;
@@ -23,20 +22,31 @@ const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 struct MainMenuData {
     screen_node: Entity,
 }
+#[derive(Component)]
+struct MainMenuButtonMarker;
 
-fn setup_mainmenu(mut commands: Commands) {
+fn setup_mainmenu(
+    camera_query: Query<Entity, With<IsDefaultUiCamera>>,
+    mut commands: Commands
+) {
+
+    let camera = camera_query.single();
+
     // render a screen
     let screen_node = commands
-        .spawn(NodeBundle {
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                     justify_content: JustifyContent::Center,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        })
+            TargetCamera(camera)
+        ))
         .id();
 
     let continue_button_entity = commands
@@ -56,6 +66,7 @@ fn setup_mainmenu(mut commands: Commands) {
                 ..default()
             },
             MainMenuButtonAction::Continue,
+            MainMenuButtonMarker,
         ))
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
@@ -86,6 +97,7 @@ fn setup_mainmenu(mut commands: Commands) {
                 ..default()
             },
             MainMenuButtonAction::Quit,
+            MainMenuButtonMarker
         ))
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
@@ -155,6 +167,7 @@ fn main_menu_action_system(
         if interaction == &Interaction::Pressed {
             match menu_button_action {
                 MainMenuButtonAction::Continue => {
+                    println!("i was here");
                     next_state.set(GameModeState::InGame);
                 }
 
