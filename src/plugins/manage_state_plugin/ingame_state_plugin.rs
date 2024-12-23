@@ -18,12 +18,34 @@ impl Plugin for InGameStatePlugin {
     }
 }
 
+enum InGameStatus {
+    Explore,
+    Combat,
+    Shop,
+    Dialogue
+}
+
+#[derive(Resource)]
+struct InGameData {
+    status: InGameStatus
+}
+
+// TODO: 
+// 1. check if ingame status resource exists
+// 2. IF NOT: initialize a resource for ingame status
+// 3. make TargetCamera the 3d camera
 fn setup(mut commands: Commands) {
     
     // commands.spawn(Camera3dBundle {
     //     transform: Transform::from_xyz(-2.5, 4.5, 9.0).looking_at(Vec3::ZERO, Vec3::Y),
     //     ..default()
     // });
+}
+
+fn initialize_ingame_data(mut commands: Commands) {
+    commands.insert_resource( InGameData {
+        status: InGameStatus::Explore
+    });
 }
 
 fn check_enter_mainmenu_system(
@@ -35,6 +57,8 @@ fn check_enter_mainmenu_system(
     }
 }
 
+// TODO:
+// do NOT delete the ingamestatus resource
 fn cleanup() {
 
 }

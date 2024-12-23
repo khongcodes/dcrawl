@@ -1,5 +1,6 @@
 # dcrawl
 
+USING bevy 0.14
 Experimenting with Bevy to create a dungeon crawler game.
 
 TODO:
