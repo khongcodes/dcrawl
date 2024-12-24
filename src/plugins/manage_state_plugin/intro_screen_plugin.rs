@@ -33,23 +33,21 @@ fn setup_intro_screen(
 
     let start_button_entity = commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    // center button
-                    width: Val::Percent(100.),
-                    height: Val::Percent(100.),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
+            Node {
+                // center button
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
                 ..default()
             },
             TargetCamera(ui_camera),
         ))
         .with_children(|parent| {
             parent
-                .spawn(ButtonBundle {
-                    style: Style {
+                .spawn((
+                    Button, 
+                    Node {
                         width: Val::Px(150.),
                         height: Val::Px(65.),
                         // horizontally + vertically center child text
@@ -57,17 +55,16 @@ fn setup_intro_screen(
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: NORMAL_BUTTON.into(),
-                    ..default()
-                })
+                    BackgroundColor(NORMAL_BUTTON.into())
+                ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "Start",
-                        TextStyle {
+                    parent.spawn((
+                        Text::new("Start"),
+                        TextFont {
                             font_size: 40.0,
-                            color: Color::srgb(0.9, 0.9, 0.9),
                             ..default()
                         },
+                        TextColor(Color::srgb(0.9, 0.9, 0.9))
                     ));
                 });
         })
