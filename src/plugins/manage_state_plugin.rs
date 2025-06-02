@@ -9,20 +9,19 @@ use crate::plugins::manage_state_plugin::{
 
 use bevy::prelude::*;
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(States, Default, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameModeState {
+    #[default]
     IntroScreen,
     Menu,
     InGame,
 }
 
-// TODO: system that changes game mode
-
 pub struct ManageStatePlugin;
 
 impl Plugin for ManageStatePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(GameModeState::IntroScreen);
+        app.init_state::<GameModeState>();
         app.add_plugins((IntroScreenPlugin, MainMenuPlugin, InGameStatePlugin));
     }
 }
