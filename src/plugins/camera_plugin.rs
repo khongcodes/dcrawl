@@ -11,17 +11,16 @@ impl Plugin for CameraPlugin {
     }
 }
 
+#[derive(Component)]
+#[require(Camera2d)]
+pub struct UiCamera;
+
+#[derive(Component)]
+#[require(Camera3d)]
+pub struct NavigateCamera;
+
 fn setup_ui_camera(mut commands: Commands) {
-    commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                order: 2,
-                ..default()
-            },
-            ..default()
-        },
-        IsDefaultUiCamera
-    ));
+    commands.spawn(UiCamera);
 }
 
 pub fn setup_runtime_camera(mut commands: Commands) {

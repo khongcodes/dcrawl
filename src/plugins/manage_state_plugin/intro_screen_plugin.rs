@@ -78,7 +78,7 @@ fn cleanup_intro_screen(mut commands: Commands, introscreen_data: Res<IntroScree
     println!("cleaning up intro screen");
     commands
         .entity(introscreen_data.start_button_entity)
-        .despawn_recursive();
+        .despawn();
 }
 
 fn run_intro_screen(
