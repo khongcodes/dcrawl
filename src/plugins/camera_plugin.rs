@@ -20,21 +20,17 @@ pub struct UiCamera;
 pub struct NavigateCamera;
 
 fn setup_ui_camera(mut commands: Commands) {
-    commands.spawn(UiCamera);
+    commands.spawn((UiCamera, Camera {
+        order: 2,
+        clear_color: ClearColorConfig::None,
+        ..default()
+    }));
 }
 
 pub fn setup_runtime_camera(mut commands: Commands) {
-    commands.spawn(
-        Camera3dBundle {
-            camera_3d: Camera3d {
-                ..default()
-            },
-            camera: Camera {
-                order: 1,
-                clear_color: ClearColorConfig::None,
-                ..default()
-            },
-            ..default()
-        }
-    );
+    commands.spawn((NavigateCamera, Camera {
+        order: 1,
+        clear_color: ClearColorConfig::None,
+        ..default()
+    }));
 }
