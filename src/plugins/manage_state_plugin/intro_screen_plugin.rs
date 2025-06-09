@@ -18,68 +18,75 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const PRESSED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
-#[derive(Resource)]
-struct IntroScreenData {
-    start_button_entity: Entity,
-}
+#[derive(Component)]
+struct IntroScreenRootNode;
+
+#[derive(Component)]
+struct StartButton;
 
 fn setup_intro_screen(
     query: Query<Entity, With<IsDefaultUiCamera>>,
     mut commands: Commands
 ) {
 
-    // TODO: try to query in IsDefaultUiCamera and make that target camera?
-    let ui_camera = query.single();
-
-    let start_button_entity = commands
-        .spawn((
+    let ui_camera = match query.single() {
+        Ok(c) => c,
+        Err(_) => return,
+    };
+    
+    commands.spawn((
+        Node {
+            // center button
+            width: Val::Percent(100.),
+            height: Val::Percent(100.),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        IntroScreenRootNode,
+        UiTargetCamera(ui_camera),
+        children![(
+            StartButton,
+            Button, 
             Node {
-                // center button
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
+                width: Val::Px(150.),
+                height: Val::Px(65.),
+                // horizontally + vertically center child text
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
                 ..default()
             },
-            TargetCamera(ui_camera),
-        ))
-        .with_children(|parent| {
-            parent
-                .spawn((
-                    Button, 
-                    Node {
-                        width: Val::Px(150.),
-                        height: Val::Px(65.),
-                        // horizontally + vertically center child text
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    BackgroundColor(NORMAL_BUTTON.into())
-                ))
-                .with_children(|parent| {
-                    parent.spawn((
-                        Text::new("Start"),
-                        TextFont {
-                            font_size: 40.0,
-                            ..default()
-                        },
-                        TextColor(Color::srgb(0.9, 0.9, 0.9))
-                    ));
-                });
-        })
-        .id();
-    commands.insert_resource(IntroScreenData {
-        start_button_entity,
-    });
+            BackgroundColor(NORMAL_BUTTON.into()),
+            children![(
+                Text::new("Start"),
+                TextFont {
+                    font_size: 40.0,
+                    ..default()
+                },
+                TextColor(Color::srgb(0.9, 0.9, 0.9))
+            )]
+        )]
+    ));
+
 }
 
-fn cleanup_intro_screen(mut commands: Commands, introscreen_data: Res<IntroScreenData>) {
+
+fn cleanup_intro_screen(
+    query: Query<Entity, With<IntroScreenRootNode>>,
+    mut commands: Commands, 
+) {
+
+    let introscreen_root_node = match query.single() {
+        Ok(n) => n,
+        Err(_) => return,
+    };
+
     println!("cleaning up intro screen");
     commands
-        .entity(introscreen_data.start_button_entity)
+        .entity(introscreen_root_node)
         .despawn();
 }
+
 
 fn run_intro_screen(
     mut next_state: ResMut<NextState<GameModeState>>,

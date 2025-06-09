@@ -1,4 +1,4 @@
-use bevy::{ prelude::{ Component, Camera3d, Camera2d, App, Startup, Plugin, Camera, ClearColorConfig, Commands, default }, 
+use bevy::{ prelude::{ Component, Camera3d, Camera2d, App, Startup, Plugin, Camera, IsDefaultUiCamera, ClearColorConfig, Commands, default }, 
     render::view::RenderLayers 
 };
 
@@ -25,13 +25,16 @@ pub struct NavigateCamera;
 pub const UI_RL: RenderLayers = RenderLayers::layer(1);
 
 // order: this camera should render its results "on top of" results of cameras with lower order
-
 fn setup_ui_camera(mut commands: Commands) {
-    commands.spawn((UiCamera, UI_RL, Camera {
-        order: 2,
-        clear_color: ClearColorConfig::None,
-        ..default()
-    }));
+    commands.spawn((
+        UiCamera, 
+        Camera {
+            order: 2,
+            clear_color: ClearColorConfig::None,
+            ..default()
+        },
+        UI_RL, IsDefaultUiCamera
+    ));
 }
 
 pub fn setup_runtime_camera(mut commands: Commands) {
