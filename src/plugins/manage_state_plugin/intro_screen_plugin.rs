@@ -18,6 +18,7 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const PRESSED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
+// marker for root node
 #[derive(Component)]
 struct IntroScreenRootNode;
 
@@ -35,15 +36,15 @@ fn setup_intro_screen(
     };
     
     commands.spawn((
+        // root container to center the button within
+        IntroScreenRootNode,
         Node {
-            // center button
             width: Val::Percent(100.),
             height: Val::Percent(100.),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             ..default()
         },
-        IntroScreenRootNode,
         UiTargetCamera(ui_camera),
         children![(
             StartButton,
@@ -92,14 +93,14 @@ fn run_intro_screen(
     mut next_state: ResMut<NextState<GameModeState>>,
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<Button>),
+        (Changed<Interaction>, With<StartButton>),
     >,
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
                 *color = PRESSED_BUTTON.into();
-                next_state.set(GameModeState::Menu);
+                next_state.set(GameModeState::MainMenu);
             }
             Interaction::Hovered => {
                 *color = HOVERED_BUTTON.into();

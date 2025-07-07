@@ -1,15 +1,15 @@
 use crate::plugins::manage_state_plugin::GameModeState;
-use bevy::prelude::*;
+use bevy::{ecs::spawn::SpawnRelatedBundle, prelude::*};
 
 pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameModeState::Menu), setup_mainmenu);
-        app.add_systems(OnExit(GameModeState::Menu), cleanup_mainmenu);
+        app.add_systems(OnEnter(GameModeState::MainMenu), setup_mainmenu);
+        app.add_systems(OnExit(GameModeState::MainMenu), cleanup_mainmenu);
         app.add_systems(
             Update,
-            (button_style_system, main_menu_action_system).run_if(in_state(GameModeState::Menu)),
+            (button_style_system, main_menu_action_system).run_if(in_state(GameModeState::MainMenu)),
         );
     }
 }
@@ -18,116 +18,69 @@ const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
-#[derive(Resource, std::fmt::Debug)]
-struct MainMenuData {
-    screen_node: Entity,
-}
+
 #[derive(Component)]
-struct MainMenuButtonMarker;
+struct MainMenuRootNode;
 
 fn setup_mainmenu(
     camera_query: Query<Entity, With<IsDefaultUiCamera>>,
     mut commands: Commands
 ) {
 
-    let camera = camera_query.single();
+    let ui_camera = match camera_query.single() {
+        Ok(c) => c,
+        Err(_) => return,
+    };
 
     // render a screen
-    let screen_node = commands
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                     justify_content: JustifyContent::Center,
-                    ..default()
-                },
-                ..default()
-            },
-            TargetCamera(camera)
-        ))
-        .id();
+    commands.spawn((
+        MainMenuRootNode,
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+             justify_content: JustifyContent::Center,
+            ..default()
+        },
+        UiTargetCamera(ui_camera),
+        children![
+            (
+                MainMenuButtonAction::New,
+                generate_main_menu_button("New")
+            ),
+            (
+                MainMenuButtonAction::Load, 
+                generate_main_menu_button("Load")
+            ),
+            (
+                MainMenuButtonAction::Quit,
+                generate_main_menu_button("Quit")
+            )
+        ]
+    ));
 
-    let continue_button_entity = commands
-        .spawn((
-            ButtonBundle {
-                style: Style {
-                    width: Val::Px(150.0),
-                    height: Val::Px(65.0),
-                    border: UiRect::all(Val::Px(5.0)),
-                    justify_content: JustifyContent::Center,
-                    align_content: AlignContent::Center,
-                    ..default()
-                },
-                border_color: BorderColor(Color::BLACK),
-                border_radius: BorderRadius::MAX,
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            },
-            MainMenuButtonAction::Continue,
-            MainMenuButtonMarker,
-        ))
-        .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Continue",
-                TextStyle {
-                    font_size: 40.0,
-                    color: Color::srgb(0.9, 0.9, 0.9),
-                    ..default()
-                },
-            ));
-        })
-        .id();
-
-    let quit_button_entity = commands
-        .spawn((
-            ButtonBundle {
-                style: Style {
-                    width: Val::Px(150.0),
-                    height: Val::Px(65.0),
-                    border: UiRect::all(Val::Px(5.0)),
-                    justify_content: JustifyContent::Center,
-                    align_content: AlignContent::Center,
-                    ..default()
-                },
-                border_color: BorderColor(Color::BLACK),
-                border_radius: BorderRadius::MAX,
-                background_color: NORMAL_BUTTON.into(),
-                ..default()
-            },
-            MainMenuButtonAction::Quit,
-            MainMenuButtonMarker
-        ))
-        .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Exit",
-                TextStyle {
-                    font_size: 80.0,
-                    color: Color::srgb(0.9, 0.9, 0.9),
-                    ..default()
-                },
-            ));
-        })
-        .id();
-
-    commands
-        .entity(screen_node)
-        .push_children(&vec![continue_button_entity, quit_button_entity]);
-    commands.insert_resource(MainMenuData { screen_node });
 }
 
-fn cleanup_mainmenu(mut commands: Commands, mainmenu_data: Res<MainMenuData>) {
+fn cleanup_mainmenu(
+    query: Query<Entity, With<MainMenuRootNode>>,
+    mut commands: Commands
+) {
+    let mainmenu_rootnode = match query.single() {
+        Ok(n) => n,
+        Err(_) => return,
+    };
+
     commands
-        .entity(mainmenu_data.screen_node)
-        .despawn_recursive();
+        .entity(mainmenu_rootnode)
+        .despawn();
 }
 
 /////////////////////////////////
 // MENU ACTIONS
 #[derive(Component)]
 enum MainMenuButtonAction {
-    Continue,
+    New,
+    Load,
     Quit,
 }
 
@@ -166,15 +119,44 @@ fn main_menu_action_system(
     for (interaction, menu_button_action) in &interaction_query {
         if interaction == &Interaction::Pressed {
             match menu_button_action {
-                MainMenuButtonAction::Continue => {
-                    println!("i was here");
+                MainMenuButtonAction::New => {
                     next_state.set(GameModeState::InGame);
-                }
-
+                },
+                MainMenuButtonAction::Load => {
+                    next_state.set(GameModeState::LoadGameMenu);
+                },
                 MainMenuButtonAction::Quit => {
-                    app_exit_events.send(AppExit::Success);
+                    app_exit_events.write(AppExit::Success);
                 }
             }
         }
     }
+}
+
+
+//////
+// HELPER FUNCTIONS 
+/////////////////////////
+///
+
+fn generate_main_menu_button(text: &str) -> (Button, Node, BackgroundColor, SpawnRelatedBundle<ChildOf, Spawn<(Text, TextFont, TextColor)>>) {
+    (
+        Button,
+        Node {
+            width: Val::Px(150.),
+            height: Val::Px(65.),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        BackgroundColor(NORMAL_BUTTON.into()),
+        children![(
+            Text::new(text),
+            TextFont {
+                font_size: 40.0,
+                ..default()
+            },
+            TextColor(Color::srgb(0.9, 0.9, 0.9))
+        )]
+    )
 }

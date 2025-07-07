@@ -13,7 +13,9 @@ use bevy::prelude::*;
 pub enum GameModeState {
     #[default]
     IntroScreen,
-    Menu,
+    MainMenu,
+    LoadGameMenu,
+    InGameMenu,
     InGame,
 }
 
