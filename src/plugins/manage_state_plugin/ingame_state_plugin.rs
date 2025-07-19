@@ -1,3 +1,7 @@
+///// SPECS
+// - button MainMenuButton nextStates to MainMenu
+//
+
 use crate::plugins::manage_state_plugin::GameModeState;
 use crate::plugins::camera_plugin::setup_runtime_camera;
 use bevy::prelude::*;

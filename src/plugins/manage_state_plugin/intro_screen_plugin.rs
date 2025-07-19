@@ -1,3 +1,7 @@
+///// SPECS
+// - button StartButton nextStates to MainMenu
+//
+
 use crate::plugins::manage_state_plugin::GameModeState;
 use bevy::prelude::*;
 

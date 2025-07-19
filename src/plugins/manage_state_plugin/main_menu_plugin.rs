@@ -1,3 +1,9 @@
+///// SPECS
+// - button ExitButton exits game
+// - button LoadMenuButton nextStates to LoadGameMenu
+// - button NewGameButton nextStates (for now) to InGame
+//
+
 use crate::plugins::manage_state_plugin::GameModeState;
 use bevy::{ecs::spawn::SpawnRelatedBundle, prelude::*};
 
