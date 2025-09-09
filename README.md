@@ -1,20 +1,16 @@
 # dcrawl
 
 ## current version
-USING bevy 0.15
+USING bevy 0.16
 
 ## what is this
 Experimenting with Bevy to create a dungeon crawler game.
 
 ## TODO:
 
-finish implementing GameState inline with flow diagram
-remove ingame_menu as a state
+- [x] Basic UI specs defined for each GameState
+- [x] Update GameState flow diagram
+- [x] define ingame substates
+- [ ] create state OnEnter OnExit triggers for ingame substates
+- [ ] Begin setting up modeling for InGameSubstate::Explore
 
-- [x] BASIC state-UI specs defined
-- [ ] remove ingame_menu from model and reexport diagram
-    - (BUT InGameState should have a MainMenuButton)
-
-InGame menu should be a substate of InGame - entering the InGame menu should not trigger CLEANUP of all rendered InGame entities!
-
-Maybe something like a camera switch?
