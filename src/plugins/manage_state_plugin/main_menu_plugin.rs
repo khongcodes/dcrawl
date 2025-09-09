@@ -7,6 +7,18 @@
 use crate::plugins::manage_state_plugin::GameModeState;
 use bevy::{ecs::spawn::SpawnRelatedBundle, prelude::*};
 
+
+/////////////////////////////////////////
+// CONFIGURABLES
+// - BUTTON COLORS
+const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
+const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+
+
+/////////////////////////////////////////
+// PLUGIN DEFINITION
+
 pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
@@ -15,15 +27,14 @@ impl Plugin for MainMenuPlugin {
         app.add_systems(OnExit(GameModeState::MainMenu), cleanup_mainmenu);
         app.add_systems(
             Update,
-            (button_style_system, main_menu_action_system).run_if(in_state(GameModeState::MainMenu)),
+            (style_buttons, main_menu_action_system).run_if(in_state(GameModeState::MainMenu)),
         );
     }
 }
 
-const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
-const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
-const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 
+/////////////////////////////////////////
+// NODE STRUCTURE
 
 #[derive(Component)]
 struct MainMenuRootNode;
@@ -67,6 +78,7 @@ fn setup_mainmenu(
 
 }
 
+
 fn cleanup_mainmenu(
     query: Query<Entity, With<MainMenuRootNode>>,
     mut commands: Commands
@@ -81,37 +93,15 @@ fn cleanup_mainmenu(
         .despawn();
 }
 
-/////////////////////////////////
-// MENU ACTIONS
+
+/////////////////////////////////////////
+// BUTTON FUNCTIONALITY
+
 #[derive(Component)]
 enum MainMenuButtonAction {
     New,
     Load,
     Quit,
-}
-
-fn button_style_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, &mut BorderColor),
-        (Changed<Interaction>, With<Button>),
-    >,
-) {
-    for (interaction, mut background_color, mut border_color) in &mut interaction_query {
-        match *interaction {
-            Interaction::Pressed => {
-                *background_color = PRESSED_BUTTON.into();
-                border_color.0 = bevy::color::palettes::basic::RED.into();
-            }
-            Interaction::Hovered => {
-                *background_color = HOVERED_BUTTON.into();
-                border_color.0 = bevy::color::palettes::basic::RED.into();
-            }
-            Interaction::None => {
-                *background_color = NORMAL_BUTTON.into();
-                border_color.0 = Color::BLACK;
-            }
-        }
-    }
 }
 
 fn main_menu_action_system(
@@ -140,10 +130,36 @@ fn main_menu_action_system(
 }
 
 
-//////
+/////////////////////////////////////////
+// BUTTON STYLING
+
+fn style_buttons(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, &mut BorderColor),
+        (Changed<Interaction>, With<Button>),
+    >,
+) {
+    for (interaction, mut background_color, mut border_color) in &mut interaction_query {
+        match *interaction {
+            Interaction::Pressed => {
+                *background_color = PRESSED_BUTTON.into();
+                border_color.0 = bevy::color::palettes::basic::RED.into();
+            }
+            Interaction::Hovered => {
+                *background_color = HOVERED_BUTTON.into();
+                border_color.0 = bevy::color::palettes::basic::RED.into();
+            }
+            Interaction::None => {
+                *background_color = NORMAL_BUTTON.into();
+                border_color.0 = Color::BLACK;
+            }
+        }
+    }
+}
+
+
+/////////////////////////////////////////
 // HELPER FUNCTIONS 
-/////////////////////////
-///
 
 fn generate_main_menu_button(text: &str) -> (Button, Node, BackgroundColor, SpawnRelatedBundle<ChildOf, Spawn<(Text, TextFont, TextColor)>>) {
     (

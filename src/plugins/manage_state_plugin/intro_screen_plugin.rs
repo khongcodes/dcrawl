@@ -1,14 +1,15 @@
 ///// SPECS
 // - button StartButton nextStates to MainMenu
-//
 
-use crate::plugins::manage_state_plugin::GameModeState;
+use crate::plugins::{ manage_state_plugin::GameModeState, camera_plugin::UiCamera };
 use bevy::prelude::*;
+
 
 pub struct IntroScreenPlugin;
 
 impl Plugin for IntroScreenPlugin {
     fn build(&self, app: &mut App) {
+        info!("Running IntroScreenPlugin app::build");
         app.add_systems(OnEnter(GameModeState::IntroScreen), setup_intro_screen);
         app.add_systems(OnExit(GameModeState::IntroScreen), cleanup_intro_screen);
         app.add_systems(
@@ -18,25 +19,24 @@ impl Plugin for IntroScreenPlugin {
     }
 }
 
-const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
-const PRESSED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
-const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
-
-// marker for root node
-#[derive(Component)]
-struct IntroScreenRootNode;
 
 #[derive(Component)]
-struct StartButton;
+pub struct IntroScreenRootNode;
 
-fn setup_intro_screen(
-    query: Query<Entity, With<IsDefaultUiCamera>>,
+// TEST: CALLING THIS IN STARTUP IN MAIN.RS
+pub fn setup_intro_screen(
+    camera_query: Query<Entity, With<UiCamera>>,
+    root_query: Query<Entity, With<IntroScreenRootNode>>,
     mut commands: Commands
 ) {
 
-    let ui_camera = match query.single() {
+    if root_query.single().is_ok() {
+        return;
+    }
+
+    let ui_camera = match camera_query.single() {
         Ok(c) => c,
-        Err(_) => return,
+        Err(_) => return
     };
     
     commands.spawn((
@@ -49,9 +49,9 @@ fn setup_intro_screen(
             align_items: AlignItems::Center,
             ..default()
         },
+        BackgroundColor(Color::srgb(0.0, 0.0, 0.0)),
         UiTargetCamera(ui_camera),
         children![(
-            StartButton,
             Button, 
             Node {
                 width: Val::Px(150.),
@@ -80,24 +80,29 @@ fn cleanup_intro_screen(
     query: Query<Entity, With<IntroScreenRootNode>>,
     mut commands: Commands, 
 ) {
-
     let introscreen_root_node = match query.single() {
         Ok(n) => n,
         Err(_) => return,
     };
 
-    println!("cleaning up intro screen");
     commands
         .entity(introscreen_root_node)
         .despawn();
 }
 
 
+/////////////////////////////////////////
+// BUTTON STYLES
+
+const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
+const PRESSED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
+const HOVERED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+
 fn run_intro_screen(
     mut next_state: ResMut<NextState<GameModeState>>,
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<StartButton>),
+        (Changed<Interaction>, With<Button>),
     >,
 ) {
     for (interaction, mut color) in &mut interaction_query {
@@ -115,3 +120,4 @@ fn run_intro_screen(
         }
     }
 }
+

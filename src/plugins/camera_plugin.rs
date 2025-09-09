@@ -1,5 +1,6 @@
-use bevy::{ prelude::{ Component, Camera3d, Camera2d, App, Startup, Plugin, Camera, IsDefaultUiCamera, ClearColorConfig, Commands, default }, 
-    render::view::RenderLayers 
+use bevy::{ 
+    prelude::*, 
+    render::view::RenderLayers,
 };
 
 pub struct CameraPlugin;
@@ -7,7 +8,7 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, (
-            setup_ui_camera,
+            // setup_ui_camera,
             setup_runtime_camera
         )); 
     }
@@ -24,8 +25,11 @@ pub struct NavigateCamera;
 // Anything with this component will only be rendered on the Camera also assigned to this component
 pub const UI_RL: RenderLayers = RenderLayers::layer(1);
 
+
+// TEST: CALLING THIS ON STARTUP SCHEDULE IN MAIN.RS
+// 
 // order: this camera should render its results "on top of" results of cameras with lower order
-fn setup_ui_camera(mut commands: Commands) {
+pub fn setup_ui_camera(mut commands: Commands) {
     commands.spawn((
         UiCamera, 
         Camera {
@@ -35,6 +39,7 @@ fn setup_ui_camera(mut commands: Commands) {
         },
         UI_RL, IsDefaultUiCamera
     ));
+    info!("Ran setup_ui_camera");
 }
 
 pub fn setup_runtime_camera(mut commands: Commands) {
