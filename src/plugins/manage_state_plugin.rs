@@ -31,24 +31,37 @@ pub enum GameModeState {
     InGame
 }
 
-/// InGameSubstate only exists when app state is GameModeState::InGame.
+// InGameSubstate only exists when app state is GameModeState::InGame.
+// Combat, Shop, and Explore should be the true SubStates
+// Dialogue can occur during Shop or Explore as overlay
+// PauseMenu can be entered from any screen as overlay
+// CharacterMenu can be entered from Explore also as overlay
 #[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
 #[source(GameModeState = GameModeState::InGame)]
 pub enum InGameSubstate {
     #[default]
     Explore,
-    Combat,
-    Shop,
-    Dialogue,
-    PauseMenu,
+    // TEMPORARILY COMMENTED OUT THE BELOW TO FOCUS ON IMPLEMENTING EXPLORE STATE
+    // Combat,
+    // Shop
 }
 
-pub struct ManageStatePlugin;
+pub struct ManageStatePlugin {
+    pub start_ingame: bool
+}
 
 impl Plugin for ManageStatePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameModeState>();
         app.add_sub_state::<InGameSubstate>();
         app.add_plugins((IntroScreenPlugin, MainMenuPlugin, LoadGameMenuPlugin, InGameStatePlugin));
+
+        if self.start_ingame {
+            app.add_systems(Startup, switchstate_ingame);
+        }
     }
+}
+
+fn switchstate_ingame(mut next_state: ResMut<NextState<GameModeState>>) {
+    next_state.set(GameModeState::InGame);
 }

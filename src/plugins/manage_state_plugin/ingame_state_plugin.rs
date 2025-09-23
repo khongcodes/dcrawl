@@ -2,15 +2,18 @@
 // - button MainMenuButton nextStates to MainMenu
 //
 
-use crate::plugins::manage_state_plugin::{ GameModeState, InGameSubstate };
-use crate::plugins::camera_plugin::NavigateCamera;
-use bevy::prelude::*;
-
 mod explore_substate;
 mod combat_substate;
-mod dialogue_substate;
 mod shop_substate;
-mod pausemenu_substate;
+
+use crate::plugins::manage_state_plugin::{ GameModeState, InGameSubstate };
+use crate::plugins::manage_state_plugin::ingame_state_plugin::{
+    explore_substate::{ setup_exploresubstate, explore_movement_controls },
+};
+use crate::exploration_movement::ExplorationMovementPlugin;
+
+use bevy::prelude::*;
+
 
 pub struct InGameStatePlugin;
 
@@ -22,6 +25,13 @@ impl Plugin for InGameStatePlugin {
             check_enter_mainmenu_system.run_if(in_state(GameModeState::InGame)),
         );
         
+        app.add_plugins(ExplorationMovementPlugin);
+        app.add_systems(OnEnter(InGameSubstate::Explore), setup_exploresubstate );
+        app.add_systems(
+            Update,
+            explore_movement_controls.run_if(in_state(InGameSubstate::Explore))
+        );
+
         //
         //InGameSubstate::Explore
         //
@@ -29,13 +39,11 @@ impl Plugin for InGameStatePlugin {
         //
         //InGameSubstate::Shop
         //
-        //InGameSubstate::Dialogue
-        //
-        //InGameSubstate::PauseMenu
     }
 }
 
 
+#[allow(dead_code)]
 #[derive(Resource)]
 struct InGameData {
     name: String
@@ -45,27 +53,10 @@ struct InGameData {
 struct InGameRootNode;
 
 
-// TODO: 
-// 1. initialize game data
-// 2. make TargetCamera the 3d camera
 fn setup(
     mut commands: Commands,
-    camera_query: Query<Entity, With<NavigateCamera>>
 ) {
-
     commands.insert_resource(initialize_ingame_data());
-
-    commands.spawn((
-        InGameRootNode,
-        Node {
-            ..default()
-        }
-    ));
-
-    // commands.spawn(Camera3dBundle {
-    //     transform: Transform::from_xyz(-2.5, 4.5, 9.0).looking_at(Vec3::ZERO, Vec3::Y),
-    //     ..default()
-    // });
 }
 
 fn initialize_ingame_data() -> InGameData {
@@ -76,13 +67,13 @@ fn initialize_ingame_data() -> InGameData {
 
 fn check_enter_mainmenu_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut next_state: ResMut<NextState<InGameSubstate>>,
+    mut next_state: ResMut<NextState<GameModeState>>,
 ) {
     if keyboard_input.pressed(KeyCode::Escape) {
-        next_state.set(InGameSubstate::PauseMenu);
+        next_state.set(GameModeState::MainMenu);
     }
 }
 
-fn cleanup() {
-
-}
+// fn cleanup() {
+//
+// }
