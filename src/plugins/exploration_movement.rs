@@ -5,7 +5,7 @@
 use std::collections::VecDeque;
 use std::f32::consts::PI;
 use bevy::prelude::{
-    App, Plugin, Resource, Res, ResMut, Time, Timer, TimerMode, Single, With, Transform, Dir3, Update, IntoScheduleConfigs, in_state, OnExit
+    App, Plugin, Resource, Res, ResMut, Time, Timer, TimerMode, Single, With, Transform, Dir3, Update, IntoScheduleConfigs, in_state, OnExit, info
 };
 use std::time::Duration;
 
@@ -128,13 +128,16 @@ fn execute_movement_queue(
     if translated {
         camera_transform.translation += direction * MOVESTEP_DISTANCE * time.delta_secs();
     } else if rotated != 0. {
-        camera_transform.rotate_y(rotated);
+        camera_transform.rotate_y(rotated * time.delta_secs());
     }
 
-    if rotated != 0. || movement_data.in_progress.as_ref().unwrap().just_finished() {
+    if movement_data.in_progress.as_ref().unwrap().just_finished() {
+        info!("movement just finished");
         movement_data.command_queue.pop_front();
         if !movement_data.command_queue.is_empty() {
-            movement_data.in_progress.as_mut().unwrap().set_duration(Duration::from_secs_f32(MOVESTEP_DURATION));
+            // movement_data.in_progress.as_mut().unwrap().set_duration(Duration::from_secs_f32(MOVESTEP_DURATION));
+            movement_data.in_progress = Some(Timer::from_seconds(MOVESTEP_DURATION, TimerMode::Once));
+
         } else {
             movement_data.in_progress = None;
         }

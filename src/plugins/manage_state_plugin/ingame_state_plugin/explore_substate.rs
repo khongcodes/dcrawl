@@ -8,7 +8,7 @@ use bevy::color::palettes::css::RED;
 use bevy::pbr::PointLight;
 
 use crate::plugins::camera_plugin::NavigateCamera;
-use crate::exploration_movement::{ 
+use crate::plugins::exploration_movement::{ 
     enqueue_movement, ExplorationMovements, ExplorationMovementData 
 };
 
