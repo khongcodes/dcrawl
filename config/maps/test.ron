@@ -1,0 +1,16 @@
+Map(
+    name: "Test Map",
+    size: (6, 7),
+    tiles: [
+        [ , , ,O,O, , ],
+        [ , ,O,O,O,O,O],
+        [O,O,O,O,O,O,O],
+        [O,O,O,O,O,O, ],
+        [ , ,O,O,O, , ],
+        [ , , , ,O,O, ]
+    ],
+    key: {
+        " ": inaccessible,
+        "O": grass
+    }
+   )

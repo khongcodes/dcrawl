@@ -12,5 +12,6 @@ Experimenting with Bevy to create a dungeon crawler game.
 - [x] Update GameState flow diagram
 - [x] define ingame substates
 - [ ] create state OnEnter OnExit triggers for ingame substates
-- [ ] Begin setting up modeling for InGameSubstate::Explore
-
+- [X] Begin setting up modeling for InGameSubstate::Explore
+- [ ] investigate adding Skybox
+- [ ] begin experimenting with map system

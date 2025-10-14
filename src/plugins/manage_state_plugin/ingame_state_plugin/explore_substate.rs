@@ -1,3 +1,5 @@
+// THIS FILE SHOULD ONLY CONTAIN code pertaining to transition between inGame Substates
+
 use bevy::prelude::{ 
     Component, Query, Entity, With, Commands, Res, ResMut, Assets,
     Mesh, StandardMaterial, Plane3d, Sphere, Vec3, Vec2, Color, Transform, Mesh3d, MeshMaterial3d,
@@ -65,6 +67,7 @@ pub fn setup_exploresubstate(
 }
 
 
+// move this into exploration_movement
 pub fn explore_movement_controls(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     movement_data: ResMut<ExplorationMovementData>
