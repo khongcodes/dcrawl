@@ -118,10 +118,10 @@ fn execute_movement_queue(
             translated = true;
         },
         ExplorationMovements::TurnClockw => {
-            rotated = PI / 2.;
+            rotated = -PI / 2.;
         },
         ExplorationMovements::TurnCounterclockw => {
-            rotated = -PI / 2.;
+            rotated = PI / 2.;
         },
     }
     

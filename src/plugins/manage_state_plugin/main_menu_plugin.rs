@@ -5,7 +5,10 @@
 //
 
 use crate::plugins::manage_state_plugin::GameModeState;
-use bevy::{ecs::spawn::SpawnRelatedBundle, prelude::*};
+use bevy::{
+    prelude::*,
+    ecs::spawn::SpawnRelatedBundle, 
+};
 
 
 /////////////////////////////////////////

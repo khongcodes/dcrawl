@@ -10,7 +10,7 @@ use crate::plugins::manage_state_plugin::{ GameModeState, InGameSubstate };
 use crate::plugins::manage_state_plugin::ingame_state_plugin::{
     explore_substate::{ setup_exploresubstate, explore_movement_controls },
 };
-use crate::plugins::exploration_movement::ExplorationMovementPlugin;
+use crate::plugins::explore_plugin::movement::ExplorationMovementPlugin;
 
 use bevy::prelude::*;
 

@@ -1,4 +1,8 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    render::renderer::RenderDevice
+};
+
 
 mod plugins;
 use crate::plugins::{
@@ -11,7 +15,14 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(CameraPlugin)
         .add_plugins(ManageStatePlugin { start_ingame: true })
-        .add_systems(Startup, (setup_ui_camera, setup_intro_screen).chain())
+        .add_systems(Startup, (
+            log_render_device_features,
+            setup_ui_camera, 
+            setup_intro_screen
+        ).chain())
         .run();
 }
 
+fn log_render_device_features(_render_device: Res<RenderDevice>) {
+    // info!("{:?}", render_device.features());
+}
