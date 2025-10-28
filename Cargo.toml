@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.16.1"
+bevy = { version = "0.16.1", features = ["dynamic_linking"] }
 ron = "0.11.0"
+serde = "1.0.228"

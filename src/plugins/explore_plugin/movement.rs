@@ -1,16 +1,20 @@
 /// This plugin organizes player movement in the Explore InGameSubstate, executing commands
 /// sequentially by queue and exposing API to enqueue commands.
 ///
-/// This plugin should be added when game is switched to Explore InGameSubstate
+/// Systems in this plugin are called in ExplorePlugin (src/plugins/explore_plugin)
 use std::collections::VecDeque;
 use std::f32::consts::PI;
 use bevy::prelude::{
-    App, Plugin, Resource, Res, ResMut, Time, Timer, TimerMode, Single, With, Transform, Dir3, Update, IntoScheduleConfigs, in_state, OnExit, info
+    Resource, Res, ResMut, Single, With, Query, Name,
+    ButtonInput, KeyCode, Gamepad, GamepadButton,
+    Transform, Dir3, Time, Timer, TimerMode, 
+    info
 };
-use std::time::Duration;
 
-use crate::plugins::camera_plugin::NavigateCamera;
-use crate::plugins::manage_state_plugin::InGameSubstate;
+use crate::plugins::{
+    camera_plugin::NavigateCamera,
+    exposed_config_plugin::ExposedConfig
+};
 
 
 /////////////////////////////////////////
@@ -30,29 +34,41 @@ pub enum ExplorationMovements {
 }
 
 
-pub struct ExplorationMovementPlugin;
-
-impl Plugin for ExplorationMovementPlugin {
-    fn build(&self, app: &mut App) {
-        app.insert_resource(
-            ExplorationMovementData {
-                in_progress: None,
-                command_queue: VecDeque::new()
-            }
-        );
-        app.add_systems(
-            Update, 
-            execute_movement_queue.run_if(in_state(InGameSubstate::Explore))
-        );
-        app.add_systems(OnExit(InGameSubstate::Explore), clear_movement_queue);
-    }
-}
-
-
 #[derive(Resource)]
 pub struct ExplorationMovementData {
-    in_progress: Option<Timer>,
-    command_queue: VecDeque<ExplorationMovements>,
+   pub in_progress: Option<Timer>,
+   pub command_queue: VecDeque<ExplorationMovements>,
+    // add location and orientation to this
+}
+
+// currently even though ExposedConfig holds gamepad settings, we are only processing keyboard
+// inputs
+pub fn explore_movement_controls(
+    exposed_config: Res<ExposedConfig>,
+    // controller_input: Query<(&Name, &Gamepad)>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    movement_data: ResMut<ExplorationMovementData>
+) {
+    let k_bindings = &exposed_config.keyboard_bindings.exploration_controls;
+
+    if keyboard_input.just_pressed(k_bindings["Walk Forward"]) {
+       enqueue_movement(ExplorationMovements::WalkForward, movement_data);
+    } 
+    else if keyboard_input.just_pressed(k_bindings["Walk Backward"]) {
+        enqueue_movement(ExplorationMovements::WalkBackward, movement_data);
+    }
+    else if keyboard_input.just_pressed(k_bindings["Strafe Left"]) {
+        enqueue_movement(ExplorationMovements::StrafeLeft, movement_data);
+    }
+    else if keyboard_input.just_pressed(k_bindings["Strafe Right"]) {
+        enqueue_movement(ExplorationMovements::StrafeRight, movement_data);
+    }
+    else if keyboard_input.just_pressed(k_bindings["Turn Left"]) {
+        enqueue_movement(ExplorationMovements::TurnCounterclockw, movement_data);
+    }
+    else if keyboard_input.just_pressed(k_bindings["Turn Right"]) {
+        enqueue_movement(ExplorationMovements::TurnClockw, movement_data);
+    }
 }
 
 
@@ -72,7 +88,7 @@ pub fn enqueue_movement(
 
 /// When InGameSubstate shifts out of exploration (for example into combat) movement queue should
 /// clear
-fn clear_movement_queue(mut movement_data: ResMut<ExplorationMovementData>) {
+pub fn clear_movement_queue(mut movement_data: ResMut<ExplorationMovementData>) {
     movement_data.in_progress = None;
     movement_data.command_queue.clear();
 }
@@ -84,7 +100,7 @@ fn clear_movement_queue(mut movement_data: ResMut<ExplorationMovementData>) {
 /// Else tick in_progress
 ///     Execute current command
 /// If timer is empty, set movementdata.in_progress to None
-fn execute_movement_queue(
+pub fn execute_movement_queue(
     camera_transform_q: Single<&mut Transform, With<NavigateCamera>>,
     mut movement_data: ResMut<ExplorationMovementData>,
     time: Res<Time>,

@@ -6,11 +6,15 @@ mod explore_substate;
 mod combat_substate;
 mod shop_substate;
 
-use crate::plugins::manage_state_plugin::{ GameModeState, InGameSubstate };
-use crate::plugins::manage_state_plugin::ingame_state_plugin::{
-    explore_substate::{ setup_exploresubstate, explore_movement_controls },
+use crate::plugins::{
+    manage_state_plugin:: {
+        GameModeState, InGameSubstate,
+        ingame_state_plugin::{
+            explore_substate::setup_exploresubstate,
+        }
+    },
+    explore_plugin::ExplorePlugin
 };
-use crate::plugins::explore_plugin::movement::ExplorationMovementPlugin;
 
 use bevy::prelude::*;
 
@@ -25,12 +29,8 @@ impl Plugin for InGameStatePlugin {
             check_enter_mainmenu_system.run_if(in_state(GameModeState::InGame)),
         );
         
-        app.add_plugins(ExplorationMovementPlugin);
+        app.add_plugins(ExplorePlugin);
         app.add_systems(OnEnter(InGameSubstate::Explore), setup_exploresubstate );
-        app.add_systems(
-            Update,
-            explore_movement_controls.run_if(in_state(InGameSubstate::Explore))
-        );
 
         //
         //InGameSubstate::Explore
