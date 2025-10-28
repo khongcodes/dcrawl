@@ -1,0 +1,26 @@
+(
+    keyboard_bindings: (
+        exploration_controls: {
+            "Walk Forward": "KeyCode::KeyW",
+            "Walk Backward": "KeyCode::KeyS",
+            "Strafe Left": "KeyCode::KeyA",
+            "Strafe Right": "KeyCode::KeyD",
+            "Turn Left": "KeyCode::KeyQ",
+            "Turn Right": "KeyCode::KeyE",
+            "Menu": "KeyCode::KeyEsc",
+            "Open Map": "KeyCode::Escape"
+        },
+    ),
+    controller_bindings: (
+        exploration_controls: {
+            "Walk Forward": "GamepadButton::DPadUp",
+            "Walk Backward": "GamepadButton::DPadDown",
+            "Strafe Left": "GamepadButton::LeftTrigger",
+            "Strafe Right": "GamepadButton::RightTigger",
+            "Turn Left": "GamepadButton::DPadLeft",
+            "Turn Right": "GamepadButton::DPadRight",
+            "Menu": "GamepadButton::Start",
+            "Open Map": "GamepadButton::Select"
+        }
+    )
+)
