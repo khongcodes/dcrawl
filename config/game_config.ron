@@ -1,26 +1,26 @@
-(
+ExposedConfig(
     keyboard_bindings: (
         exploration_controls: {
-            "Walk Forward": "KeyCode::KeyW",
-            "Walk Backward": "KeyCode::KeyS",
-            "Strafe Left": "KeyCode::KeyA",
-            "Strafe Right": "KeyCode::KeyD",
-            "Turn Left": "KeyCode::KeyQ",
-            "Turn Right": "KeyCode::KeyE",
-            "Menu": "KeyCode::KeyEsc",
-            "Open Map": "KeyCode::Escape"
+            "Walk Forward": KeyW,
+            "Walk Backward": KeyS,
+            "Strafe Left": KeyA,
+            "Strafe Right": KeyD,
+            "Turn Left": KeyQ,
+            "Turn Right": KeyE,
+            "Menu": Escape,
+            "Open Map": Tab
         },
     ),
     controller_bindings: (
         exploration_controls: {
-            "Walk Forward": "GamepadButton::DPadUp",
-            "Walk Backward": "GamepadButton::DPadDown",
-            "Strafe Left": "GamepadButton::LeftTrigger",
-            "Strafe Right": "GamepadButton::RightTigger",
-            "Turn Left": "GamepadButton::DPadLeft",
-            "Turn Right": "GamepadButton::DPadRight",
-            "Menu": "GamepadButton::Start",
-            "Open Map": "GamepadButton::Select"
+            "Walk Forward": DPadUp,
+            "Walk Backward": DPadDown,
+            "Strafe Left": LeftTrigger,
+            "Strafe Right": RightTrigger,
+            "Turn Left": DPadLeft,
+            "Turn Right": DPadRight,
+            "Menu": Start,
+            "Open Map": Select
         }
     )
 )
