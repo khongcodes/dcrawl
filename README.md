@@ -16,4 +16,6 @@ Experimenting with Bevy to create a dungeon crawler game.
 - [X] Begin setting up modeling for InGameSubstate::Explore
 - [X] investigate adding Skybox
 - [ ] begin experimenting with map system
-- [ ] investigate bevy reflection for ser/deser exposed config (for remappable controls)
+- [X] investigate bevy reflection for ser/deser exposed config (for remappable controls)
+- [ ] create buffer time since last input to prevent double input register that seems to occasionally occur
+- [ ] map current orientation into Player so orientation can be manipulated as global quaternion

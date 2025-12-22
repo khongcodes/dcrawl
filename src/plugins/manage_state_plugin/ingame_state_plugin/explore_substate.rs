@@ -110,39 +110,6 @@ pub fn setup_exploresubstate(
 }
 
 
-// move this into exploration_movement
-// pub fn explore_movement_controls(
-//     keyboard_input: Res<ButtonInput<KeyCode>>,
-//     movement_data: ResMut<ExplorationMovementData>
-// ) {
-//     // CONTROLS SHOULD BE REMAPPABLE
-//     const KEY_FORWARD: KeyCode = KeyCode::KeyW;
-//     const KEY_BACKWARD: KeyCode = KeyCode::KeyS;
-//     const KEY_STRAFELEFT: KeyCode = KeyCode::KeyA;
-//     const KEY_STRAFERIGHT: KeyCode = KeyCode::KeyD;
-//     const KEY_ROTATELEFT: KeyCode = KeyCode::KeyQ;
-//     const KEY_ROTATERIGHT: KeyCode = KeyCode::KeyE;
-//
-//
-//     if keyboard_input.just_pressed(KEY_FORWARD) {
-//        enqueue_movement(ExplorationMovements::WalkForward, movement_data);
-//     } 
-//     else if keyboard_input.just_pressed(KEY_BACKWARD) {
-//         enqueue_movement(ExplorationMovements::WalkBackward, movement_data);
-//     }
-//     else if keyboard_input.just_pressed(KEY_STRAFELEFT) {
-//         enqueue_movement(ExplorationMovements::StrafeLeft, movement_data);
-//     }
-//     else if keyboard_input.just_pressed(KEY_STRAFERIGHT) {
-//         enqueue_movement(ExplorationMovements::StrafeRight, movement_data);
-//     }
-//     else if keyboard_input.just_pressed(KEY_ROTATELEFT) {
-//         enqueue_movement(ExplorationMovements::TurnCounterclockw, movement_data);
-//     }
-//     else if keyboard_input.just_pressed(KEY_ROTATERIGHT) {
-//         enqueue_movement(ExplorationMovements::TurnClockw, movement_data);
-//     }
-// }
 
 // pub fn run_exploresubstate() {
 //

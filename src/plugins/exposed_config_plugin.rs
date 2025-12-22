@@ -1,13 +1,19 @@
+// This file contains code with Bevy's Reflect trait. This can be read about here:
+// https://taintedcoders.com/bevy/reflection
+
 use std::{ 
     fs, fs::OpenOptions, 
     collections::HashMap,
-    io::Write
+    io::Write,
+    any::TypeId,
 };
-use serde::{ Serialize, Deserialize };
+use serde::{ de::DeserializeSeed };
 use bevy::{
-    reflect::{ Enum, FromReflect, PartialReflect },
+    reflect::{ FromReflect, PartialReflect, TypeRegistry,
+        serde::{ TypedReflectDeserializer, TypedReflectSerializer }
+    },
     prelude::{ 
-        Commands, Resource, Res, Startup, App, Plugin,
+        Commands, Resource, Res, Startup, App, Plugin, Reflect,
         GamepadButton, KeyCode, error
     },
 };
@@ -23,102 +29,67 @@ impl Plugin for ExposedConfigPlugin {
     }
 }
 
-
-#[derive(Debug, Deserialize, Serialize)]
-struct SerializedExposedConfig {
-    keyboard_bindings: SerializedBindings,
-    controller_bindings: SerializedBindings
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct SerializedBindings {
-    exploration_controls: HashMap<String, String>,
-}
-
-
-#[derive(Debug, Resource)]
+// Resources with the Reflect trait derived will have their type registered in the world's
+// AppTypeRegistry resource, enabling automatic extraction when we serialize.
+// Fields can then be accessed dynamically from the string value of the property.
+#[derive(Reflect, Debug, Resource)]
 pub struct ExposedConfig {
     pub keyboard_bindings: KeyboardBindings,
     pub controller_bindings: ControllerBindings
 }
 
-#[derive(Debug)]
+#[derive(Reflect, Debug)]
 pub struct KeyboardBindings { 
     pub exploration_controls: HashMap<String, KeyCode>
 }
-#[derive(Debug)]
+#[derive(Reflect, Debug)]
 pub struct ControllerBindings {
     pub exploration_controls: HashMap<String, GamepadButton>
 }
 
-impl SerializedBindings{
-    fn unpack_keyboard(self) -> KeyboardBindings {
-        let mut map: HashMap<String, KeyCode> = HashMap::new();
-        for (action_name, keycode_str) in self.exploration_controls {
-            // error!("{}, {}", action_name, keycode_str);
-            map.insert(action_name, KeyCode::from_reflect(keycode_str.as_partial_reflect()).unwrap());
-        }
-        KeyboardBindings { exploration_controls: map }
-    }
-    fn unpack_controller(self) -> ControllerBindings {
-        let mut map: HashMap<String, GamepadButton> = HashMap::new();
-        for (action_name, button_str) in self.exploration_controls {
-            map.insert(action_name, GamepadButton::from_reflect(&button_str).unwrap());
-        }
-        ControllerBindings { exploration_controls: map }
-    }
-    fn from_keyboard(k_controls: &KeyboardBindings) -> SerializedBindings {
-        let mut exploration_controls: HashMap<String,String> = HashMap::new();
-        for (action_name, keycode) in &k_controls.exploration_controls {
-            exploration_controls.insert(String::from(action_name), keycode.variant_path());
-        }
-        SerializedBindings { exploration_controls }
-    }
-    fn from_controller(c_controls: &ControllerBindings) -> SerializedBindings {
-        let mut exploration_controls: HashMap<String,String> = HashMap::new();
-        for (action_name, keycode) in &c_controls.exploration_controls {
-            exploration_controls.insert(String::from(action_name), keycode.variant_path());
-        }
-        SerializedBindings { exploration_controls }
-    }
-}
-
-impl SerializedExposedConfig {
-    fn unpack(self) -> ExposedConfig {
-        ExposedConfig {
-            keyboard_bindings: self.keyboard_bindings.unpack_keyboard(),
-            controller_bindings: self.controller_bindings.unpack_controller()
-        }
-    }
-}
-
 impl ExposedConfig {
-    fn pack(&self) -> SerializedExposedConfig {
-        SerializedExposedConfig {
-            keyboard_bindings: SerializedBindings::from_keyboard(&self.keyboard_bindings),
-            controller_bindings: SerializedBindings::from_controller(&self.controller_bindings),
-        }
-    }
+    // fn pack(&self) -> SerializedExposedConfig {
+    //     SerializedExposedConfig {
+    //         keyboard_bindings: SerializedBindings::from_keyboard(&self.keyboard_bindings),
+    //         controller_bindings: SerializedBindings::from_controller(&self.controller_bindings),
+    //     }
+    // }
 }
 
 fn load_exposed_config_file(mut commands: Commands) {
-    let config_str = fs::read_to_string(CONFIG_FILEPATH).unwrap_or_else(|err|panic!("{}", err));
-    let ser_config: SerializedExposedConfig = ron::from_str(&config_str).unwrap_or_else(|err|panic!("{}",err));
-    let config = ser_config.unpack();
+    let config_ron_str = fs::read_to_string(CONFIG_FILEPATH).unwrap_or_else(|err|panic!("{}", err));
+    
+    // make sure registry has the type
+    let mut type_registry = TypeRegistry::default();
+    type_registry.register::<ExposedConfig>();
+
+    // deserialize the RON string
+    let registration = type_registry.get(TypeId::of::<ExposedConfig>()).unwrap();
+    let mut deserializer = ron::de::Deserializer::from_str(&config_ron_str).unwrap_or_else(|e|panic!("{}",e));
+    let reflect_deserializer = TypedReflectDeserializer::new(registration, &type_registry);
+    let config_reflect_box: Box<dyn PartialReflect> = reflect_deserializer.deserialize(&mut deserializer).unwrap();
+    let config = ExposedConfig::from_reflect(&*config_reflect_box).unwrap();
     commands.insert_resource(config);
 }
 
-pub fn update_exposed_config_file(config: Res<ExposedConfig>) {
+pub fn update_exposed_config_file(config: Res<ExposedConfig>) -> Result<String, String>{
     let mut file = OpenOptions::new()
         .write(true)
         .truncate(true)
         .open(CONFIG_FILEPATH).unwrap_or_else(|err| panic!("{}", err));
     
+    // let type_registry = type_registry.read();
+    let type_registry = TypeRegistry::default();
+    let reflect_serializer = TypedReflectSerializer::new(config.as_partial_reflect(), &type_registry);
     let new_config = ron::ser::to_string_pretty(
-        &config.as_ref().pack(), 
+        &reflect_serializer,
         ron::ser::PrettyConfig::default()
     ).unwrap_or_else(|err| panic!("{}", err));
 
-    file.write_all(new_config.as_bytes());
+    if file.write_all(new_config.as_bytes()).is_ok() {
+        Ok(String::from("file write successful"))
+    } else {
+        Err(String::from("error updating CONFIG_FILEPATH"))
+    }
 }
 

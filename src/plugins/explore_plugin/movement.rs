@@ -3,13 +3,14 @@
 ///
 /// Systems in this plugin are called in ExplorePlugin (src/plugins/explore_plugin)
 use std::collections::VecDeque;
-use std::f32::consts::PI;
+use std::f32::consts::{ FRAC_PI_2 };
 use bevy::prelude::{
     Resource, Res, ResMut, Single, With, Query, Name,
     ButtonInput, KeyCode, Gamepad, GamepadButton,
     Transform, Dir3, Time, Timer, TimerMode, 
     info
 };
+use bevy::math::Quat;
 
 use crate::plugins::{
     camera_plugin::NavigateCamera,
@@ -19,11 +20,14 @@ use crate::plugins::{
 
 /////////////////////////////////////////
 // CONFIGURABLES
-const MOVESTEP_DURATION: f32 = 0.5;
+const MOVESTEP_DURATION: f32 = 0.3;
+const MOVE_INPUT_BUFFER: f32 = 0.08;
+
 // This is a temporary constant - this should be derived, in the future, from map tile size
 const MOVESTEP_DISTANCE: f32 = 5.0;
 
 
+#[derive(Debug)]
 pub enum ExplorationMovements {
     WalkForward,
     WalkBackward,
@@ -37,6 +41,7 @@ pub enum ExplorationMovements {
 #[derive(Resource)]
 pub struct ExplorationMovementData {
    pub in_progress: Option<Timer>,
+   pub between_inputs: Option<Timer>,
    pub command_queue: VecDeque<ExplorationMovements>,
     // add location and orientation to this
 }
@@ -47,8 +52,17 @@ pub fn explore_movement_controls(
     exposed_config: Res<ExposedConfig>,
     // controller_input: Query<(&Name, &Gamepad)>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    movement_data: ResMut<ExplorationMovementData>
+    movement_data: ResMut<ExplorationMovementData>,
+    time: Res<Time>
 ) {
+    // if between_inputs timer exists and is not finished - tick and return early
+    // else - do not enqueue input
+    if let Some(timer) = movement_data.between_inputs { 
+        if !timer.is_finished() {
+            timer.tick(time.delta());
+        }
+    }
+
     let k_bindings = &exposed_config.keyboard_bindings.exploration_controls;
 
     if keyboard_input.just_pressed(k_bindings["Walk Forward"]) {
@@ -69,6 +83,9 @@ pub fn explore_movement_controls(
     else if keyboard_input.just_pressed(k_bindings["Turn Right"]) {
         enqueue_movement(ExplorationMovements::TurnClockw, movement_data);
     }
+
+    // if we've gotten this far - assume we've just completed enqueueing a movement
+    // set the value to be a new timer
 }
 
 
@@ -79,6 +96,7 @@ pub fn enqueue_movement(
     movement: ExplorationMovements,
     mut movement_data: ResMut<ExplorationMovementData>
 ) {
+    info!("Enqueueing {:?}", movement);
     movement_data.command_queue.push_back(movement);
     if movement_data.in_progress.is_none() {
         movement_data.in_progress = Some(Timer::from_seconds(MOVESTEP_DURATION, TimerMode::Once));
@@ -134,17 +152,30 @@ pub fn execute_movement_queue(
             translated = true;
         },
         ExplorationMovements::TurnClockw => {
-            rotated = -PI / 2.;
+            rotated = -FRAC_PI_2;
         },
         ExplorationMovements::TurnCounterclockw => {
-            rotated = PI / 2.;
+            rotated = FRAC_PI_2;
         },
     }
     
     if translated {
         camera_transform.translation += direction * MOVESTEP_DISTANCE * time.delta_secs();
     } else if rotated != 0. {
-        camera_transform.rotate_y(rotated * time.delta_secs());
+        // rotate_y needs to take in the delta of rotation in this tick, rather than the whole
+        // degree of rotation; thus we need to calculate the speed required to complete rotation by
+        // <rotated> over the course of <MOVESTEP_DURATION>.
+        let fraction = movement_data.in_progress.as_ref().unwrap().fraction();
+        let speed = 1.0 / MOVESTEP_DURATION;
+        // with rotate_local_y, I keep consistently getting greater than 90 degree rotation. I am
+        // going to see if working with Quaternions gets me better results.
+        // Otherwise - I wonder if I have to figure out if I will have more success with
+        // local/homogeneous coords.
+        // camera_transform.rotate_local_y(rotated * time.delta_secs() * speed);
+
+        let initial_rot = camera_transform.rotation;
+        let new_rot = initial_rot.lerp(Quat::from_rotation_y(rotated), fraction);
+        camera_transform.rotation = new_rot;
     }
 
     if movement_data.in_progress.as_ref().unwrap().just_finished() {

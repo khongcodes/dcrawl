@@ -2,7 +2,7 @@
 
 use std::collections::VecDeque;
 use bevy::prelude::{ 
-    App, Plugin, Update, OnExit,
+    App, Plugin, Update, OnExit, FixedUpdate,
     in_state,
     IntoScheduleConfigs
 };
@@ -29,15 +29,16 @@ impl Plugin for ExplorePlugin {
         app.insert_resource(
             ExplorationMovementData {
                 in_progress: None,
+                between_inputs: None,
                 command_queue: VecDeque::new()
             }
         );
 
         app.add_systems(
-            Update,
+            FixedUpdate,
             (
-                explore_movement_controls,
-                execute_movement_queue
+                execute_movement_queue,
+                explore_movement_controls.after(execute_movement_queue),
             )
             .distributive_run_if(in_state(InGameSubstate::Explore))
         );
