@@ -21,7 +21,7 @@ use crate::plugins::{
 /////////////////////////////////////////
 // CONFIGURABLES
 const MOVESTEP_DURATION: f32 = 0.3;
-const MOVE_INPUT_BUFFER: f32 = 0.08;
+const INPUT_BUFFER: f32 = 0.08;
 
 // This is a temporary constant - this should be derived, in the future, from map tile size
 const MOVESTEP_DISTANCE: f32 = 5.0;
@@ -52,14 +52,16 @@ pub fn explore_movement_controls(
     exposed_config: Res<ExposedConfig>,
     // controller_input: Query<(&Name, &Gamepad)>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    movement_data: ResMut<ExplorationMovementData>,
+    mut movement_data: ResMut<ExplorationMovementData>,
     time: Res<Time>
 ) {
     // if between_inputs timer exists and is not finished - tick and return early
     // else - do not enqueue input
-    if let Some(timer) = movement_data.between_inputs { 
+    if movement_data.between_inputs.is_some() {
+        let timer = movement_data.between_inputs.as_mut().unwrap();
         if !timer.is_finished() {
             timer.tick(time.delta());
+            return;
         }
     }
 
@@ -83,9 +85,6 @@ pub fn explore_movement_controls(
     else if keyboard_input.just_pressed(k_bindings["Turn Right"]) {
         enqueue_movement(ExplorationMovements::TurnClockw, movement_data);
     }
-
-    // if we've gotten this far - assume we've just completed enqueueing a movement
-    // set the value to be a new timer
 }
 
 
@@ -101,6 +100,7 @@ pub fn enqueue_movement(
     if movement_data.in_progress.is_none() {
         movement_data.in_progress = Some(Timer::from_seconds(MOVESTEP_DURATION, TimerMode::Once));
     }
+    movement_data.between_inputs = Some(Timer::from_seconds(INPUT_BUFFER, TimerMode::Once));
 }
 
 

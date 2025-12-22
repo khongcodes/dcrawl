@@ -10,7 +10,7 @@ use bevy::{
         error
     },
     color::palettes::css::RED,
-    pbr::PointLight,
+    light::PointLight,
     image::CompressedImageFormats,
     core_pipeline::Skybox,
 };

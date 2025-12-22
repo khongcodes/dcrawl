@@ -146,15 +146,15 @@ fn style_buttons(
         match *interaction {
             Interaction::Pressed => {
                 *background_color = PRESSED_BUTTON.into();
-                border_color.0 = bevy::color::palettes::basic::RED.into();
+                border_color.set_all(bevy::color::palettes::basic::RED);
             }
             Interaction::Hovered => {
                 *background_color = HOVERED_BUTTON.into();
-                border_color.0 = bevy::color::palettes::basic::RED.into();
+                border_color.set_all(bevy::color::palettes::basic::RED);
             }
             Interaction::None => {
                 *background_color = NORMAL_BUTTON.into();
-                border_color.0 = Color::BLACK;
+                border_color.set_all(Color::BLACK);
             }
         }
     }

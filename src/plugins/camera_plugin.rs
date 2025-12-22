@@ -1,6 +1,6 @@
 use bevy::{ 
     prelude::*, 
-    render::view::RenderLayers,
+    camera::visibility::RenderLayers,
 };
 
 pub struct CameraPlugin;
