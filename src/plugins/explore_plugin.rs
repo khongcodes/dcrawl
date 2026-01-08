@@ -28,9 +28,12 @@ impl Plugin for ExplorePlugin {
         
         app.insert_resource(
             ExplorationMovementData {
-                in_progress: None,
-                between_inputs: None,
-                command_queue: VecDeque::new()
+                current_movement_timer: None,
+                input_queue_buffer_timer: None,
+                current_movement_command: None,
+                command_queue: VecDeque::new(),
+                oriented_to_cardinal_directions: false,
+                cardinal_facing: None
             }
         );
 
@@ -38,7 +41,7 @@ impl Plugin for ExplorePlugin {
             FixedUpdate,
             (
                 execute_movement_queue,
-                explore_movement_controls.after(execute_movement_queue),
+                explore_movement_controls.before(execute_movement_queue),
             )
             .distributive_run_if(in_state(InGameSubstate::Explore))
         );

@@ -46,6 +46,6 @@ fn setup_runtime_camera(mut commands: Commands) {
             clear_color: ClearColorConfig::None,
             ..default()
         },
-        // Transform::from_xyz(0., 0., 0.)
+        Transform::from_xyz(0., 0., 0.)
     ));
 }
